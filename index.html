@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 타로점</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+        }
+        .tarot-container {
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 350px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .card-display {
+            width: 120px;
+            height: 200px;
+            border: 2px dashed #aaa;
+            border-radius: 8px;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background-color: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+        .card-display.revealed {
+            border: 2px solid #6c5ce7;
+            background-color: #e8e8ff;
+        }
+        button {
+            background-color: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #5b4bc4;
+        }
+        .result-box {
+            margin-top: 15px;
+            text-align: left;
+            display: none;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #6c5ce7;
+            font-size: 15px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .result-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 5px;
+        }
+        .advice {
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="tarot-container">
+    <h2>✨ 오늘의 타로점 점치기 ✨</h2>
+    <p style="font-size: 12px; color: #777; margin: 0;">오늘 나에게 필요한 조언은 무엇일까?</p>
+    
+    <div id="cardDisplay" class="card-display">🃏</div>
+    
+    <button onclick="drawCard()">카드 뽑기</button>
+    
+    <div id="resultBox" class="result-box">
+        <div id="resultTitle" class="result-title"></div>
+        <p id="cardMeaning" class="result-text"></p>
+        <p id="todayFortune" class="result-text"></p>
+        <p id="todayAdvice" class="result-text advice"></p>
+    </div>
+</div>
+
+<script>
+    // 제공된 타로 메이저 아르카나 자료를 기반으로 정의한 데이터
+    const tarotCards = [
+        {
+            name: "0번 바보 (The Fool)",
+            emoji: "✨",
+            meaning: "새로운 시작을 앞두고 여행을 떠나는 순수하고 활기찬 모습입니다. 절벽 끝에서도 두려워하지 않는 긍정적인 에너지를 품고 있습니다.",
+            fortune: "🔮 운세: 순수한 마음으로 새로운 길을 발견하거나 무언가를 새로 시작하기에 아주 좋은 날입니다.",
+            advice: "⚠️ 조언: 매사에 지나치게 경솔하거나 어리석은 행동을 하지 않도록 주의하고 사소한 것에 집착하지 마세요."
+        },
+        {
+            name: "1번 마법사 (The Magician)",
+            emoji: "🧙‍♂️",
+            meaning: "순수함, 경험, 지식을 모두 갖추고 머리와 허리에 영원의 상징을 두른 능력 있는 마법사입니다.",
+            fortune: "🔮 운세: 당신의 의지나 주변 상황이 모두 좋게 흘러가는 날입니다. 지능과 능력을 발휘해 원하는 바를 쟁취할 수 있습니다.",
+            advice: "⚠️ 조언: 정당하지 못한 꾀를 내거나 타인을 속이려는 행동은 금물입니다. 편법을 쓰지 마세요."
+        },
+        {
+            name: "3번 황후 (The Empress)",
+            emoji: "👑",
+            meaning: "생명의 근원인 대지 위에서 비옥함과 권능을 상징하는 옷을 입고 풍요로운 수확물에 둘러싸인 모습입니다.",
+            fortune: "🔮 운세: 그동안 노력해 온 일에서 풍족한 결실을 맺을 수 있는 날입니다. 가정에 화목이 깃들고 활력이 넘칩니다.",
+            advice: "⚠️ 조언: 일이 다소 지연되거나 지체되더라도 조급해하지 말고 대지의 여유로움을 유지하세요."
+        }
+    ];
+
+    function drawCard() {
+        const display = document.getElementById('cardDisplay');
+        const resultBox = document.getElementById('resultBox');
+        
+        // 애니메이션 효과 (카드가 섞이는 느낌)
+        display.classList.remove('revealed');
+        display.innerText = "🔮";
+        
+        setTimeout(() => {
+            // 무작위 카드 선택
+            const randomIndex = Math.floor(Math.random() * tarotCards.length);
+            const card = tarotCards[randomIndex];
+            
+            // 화면에 반영
+            display.innerText = card.emoji;
+            display.classList.add('revealed');
+            
+            document.getElementById('resultTitle').innerText = card.name;
+            document.getElementById('cardMeaning').innerHTML = "<b>카드 의미:</b> " + card.meaning;
+            document.getElementById('todayFortune').innerText = card.fortune;
+            document.getElementById('todayAdvice').innerText = card.advice;
+            
+            resultBox.style.display = 'block';
+        }, 500); // 0.5초 뒤 결과 공개
+    }
+</script>
+
+</body>
+</html>
